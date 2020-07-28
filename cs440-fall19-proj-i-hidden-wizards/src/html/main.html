@@ -1,0 +1,90 @@
+<!-- 
+   File:            main.html
+   Created By: 		  Anonymous
+   Created On:      29/10/2019
+   Description:     ////////// 
+   Citations:       Inspiration and some part of code taken from webgl-infinite-terrain-demo at https://github.com/dlubarov/webgl-infinite-terrain-demo 
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+<head>
+  <title>Flight Simulator</title>
+
+ 
+
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+  <script type="text/javascript" src="../../lib/utils/webgl-utils.js"></script>
+  <script type="text/javascript" src="../../lib/gl-matrix/gl-matrix-min.js"></script>
+
+
+
+  <script type="text/javascript" src="../js/height.js"></script>
+  <script type="text/javascript" src="../js/math.js"></script>
+  <script type="text/javascript" src="../js/terrain.js"></script>
+
+
+  <script id="shader-vs" type="x-shader/x-vertex">
+      const float AMBIENT_LIGHT = 0.4;
+      const float SUN_LIGHT = 1.0;
+      const vec3 SUN_DIRECTION = vec3(1.0, 1.0, 1.0);
+      attribute vec3 TERRAIN_COLOR;
+      //const vec3 FOG_COLOR = vec3(0.6, 0.8, 1.0);
+      const vec3 FOG_COLOR = vec3(0.9, 0.9, 0.9);
+
+      attribute vec3 aVertexPosition;
+      attribute vec3 aVertexNormal;
+
+      uniform mat4 uTransformMatrix;
+
+      varying vec3 vColor;
+      varying float vFog;
+
+      void main(void) {
+        float sunStrength = abs(dot(aVertexNormal, SUN_DIRECTION));
+        float brightness = AMBIENT_LIGHT + SUN_LIGHT * sunStrength;
+        
+        // TODO: Should instead be based on the magnitude of the view space
+        // coordinates, so that rotating the camera doesn't change an object's
+        // fog intensity.
+        
+        vColor = TERRAIN_COLOR;
+        if (aVertexPosition.y < -12.0){
+          vColor = vec3(0.0 , 0.0, 1.0)*brightness;
+        }
+        else if (aVertexPosition.y >= -12.0 && aVertexPosition.y < -4.0){
+          vColor = vec3(0.0 , 1.0, 0.0)*brightness;
+        }
+        else if (aVertexPosition.y >= -4.0 && aVertexPosition.y < 6.0){
+          vColor = vec3(0.59 , 0.29, 0.0)*brightness;
+        }
+
+        else{
+          vColor = vec3( 1.0, 1.0, 1.0)*brightness;
+        }
+
+        gl_Position = uTransformMatrix * vec4(aVertexPosition, 1.0);
+        float fogIntensity = gl_Position[2] / 200.0;
+      }
+    </script>
+
+  <script id="shader-fs" type="x-shader/x-fragment">
+      precision mediump float;
+
+      varying vec3 vColor;
+      varying float vFog;
+
+      void main(void) {
+        gl_FragColor = vec4(vColor, 1);
+      }
+    </script>
+</head>
+
+<body style="margin: 0; padding: 0;">
+  <p style="float: right; position: absolute; color: red;"><span id="fps">0</span> FPS</p>
+  <canvas id="canvas" width="800" height="600"></canvas>
+</body>
+
+</html>
